@@ -1,0 +1,39 @@
+﻿<Window x:Class="MLP_Constructor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MLP_Constructor"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid x:Name="mainGrid" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="23*" ></RowDefinition>
+            <RowDefinition Height="396*" ></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0">
+            <MenuItem Header="Файл">
+                <MenuItem Header="Открыть"></MenuItem>
+                <MenuItem Header="Сохранить"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="Навигация" >
+
+                <MenuItem Header="Этап 1. Конфигурирование нейросети." >
+                    <MenuItem Header="Шаг 1. Выбор источника данных." ></MenuItem>
+                    <MenuItem Header="Шаг 2. Выбор входных данных. (нужен шаг 1)" IsEnabled="False"></MenuItem>
+                    <MenuItem Header="Шаг 3. Препроцессинг входных параметров."></MenuItem>
+                    <MenuItem Header="Шаг 4. Выбор конфигурации МСП."></MenuItem>
+                    <MenuItem Header="Шаг 5. Выбор функции активации."></MenuItem>
+                    <MenuItem Header="Шаг 6. Выбор формата выходных данных."></MenuItem>
+                </MenuItem>
+                <MenuItem Header="Этап 2. Настройка обучения нейросети.">
+                    <MenuItem Header="Шаг 1. Выбор обучающего распределения."></MenuItem>
+                    <MenuItem Header="Шаг 2. Выбор функции потерь."></MenuItem>
+                    <MenuItem Header="Шаг 3. Выбор функции регуляризации."></MenuItem>
+                </MenuItem>
+                <MenuItem Header="Этап 3. Обучение нейросети."></MenuItem>
+            </MenuItem>
+        </Menu>
+    </Grid>
+</Window>
