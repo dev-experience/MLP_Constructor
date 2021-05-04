@@ -8,32 +8,9 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid x:Name="mainGrid" >
         <Grid.RowDefinitions>
-            <RowDefinition Height="23*" ></RowDefinition>
-            <RowDefinition Height="396*" ></RowDefinition>
+            <RowDefinition Height="20" ></RowDefinition>
+            <RowDefinition Height="5*" ></RowDefinition>
+            <RowDefinition Height="1*" ></RowDefinition>
         </Grid.RowDefinitions>
-
-        <Menu Grid.Row="0">
-            <MenuItem Header="Файл">
-                <MenuItem Header="Открыть"></MenuItem>
-                <MenuItem Header="Сохранить"></MenuItem>
-            </MenuItem>
-            <MenuItem Header="Навигация" >
-
-                <MenuItem Header="Этап 1. Конфигурирование нейросети." >
-                    <MenuItem Header="Шаг 1. Выбор источника данных." ></MenuItem>
-                    <MenuItem Header="Шаг 2. Выбор входных данных. (нужен шаг 1)" IsEnabled="False"></MenuItem>
-                    <MenuItem Header="Шаг 3. Препроцессинг входных параметров."></MenuItem>
-                    <MenuItem Header="Шаг 4. Выбор конфигурации МСП."></MenuItem>
-                    <MenuItem Header="Шаг 5. Выбор функции активации."></MenuItem>
-                    <MenuItem Header="Шаг 6. Выбор формата выходных данных."></MenuItem>
-                </MenuItem>
-                <MenuItem Header="Этап 2. Настройка обучения нейросети.">
-                    <MenuItem Header="Шаг 1. Выбор обучающего распределения."></MenuItem>
-                    <MenuItem Header="Шаг 2. Выбор функции потерь."></MenuItem>
-                    <MenuItem Header="Шаг 3. Выбор функции регуляризации."></MenuItem>
-                </MenuItem>
-                <MenuItem Header="Этап 3. Обучение нейросети."></MenuItem>
-            </MenuItem>
-        </Menu>
     </Grid>
 </Window>
