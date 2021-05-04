@@ -56,7 +56,7 @@ namespace WPFConstructor
         public static StepByStepToken New(Grid targetContainer,
             StagesFactory stagesProvider, object dataContext=null)
         {
-            var token = StepByStepToken.New;
+            var token = stagesProvider.Token;
             token.DataContext = dataContext;
             stepByStepConstructors.Add(token,
                 new StepByStepWPFConstructor(targetContainer, stagesProvider, token));

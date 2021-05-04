@@ -14,7 +14,7 @@ namespace WPFConstructor.Steps
         protected override Panel CreateContent()
         {
             TextBlock text = new TextBlock();
-            text.Text = "README";
+            text.Text = StepToken.GetContext<string>();
             Grid grid = new Grid();
             grid.RowDefinitions.Add(new RowDefinition());
             grid.Children.Add(text);

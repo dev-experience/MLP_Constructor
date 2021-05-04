@@ -24,7 +24,7 @@ namespace WPFConstructor
         {
             
             CurrentAddress = new StepAddress();
-            Stages = new List<Stage>(stagesProvider.GetStages(token));
+            Stages = new List<Stage>(stagesProvider.GetStages());
         }
 
         private Panel GetContent(StepAddress address)

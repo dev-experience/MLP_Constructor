@@ -1,4 +1,7 @@
 ﻿using System.Windows;
+using WPFConstructor;
+using WPFConstructor.Stages;
+using WPFConstructor.Steps;
 
 namespace MLP_Constructor
 {

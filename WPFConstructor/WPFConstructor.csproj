@@ -69,6 +69,7 @@
     <Compile Include="StepByStepToken.cs" />
     <Compile Include="StepByStepWPFConstructor.cs" />
     <Compile Include="Steps\ReadmeStep1.cs" />
+    <Compile Include="Steps\ReadmeStep2.cs" />
     <Compile Include="Steps\Step.cs" />
     <Compile Include="Steps\StepAddress.cs" />
     <Compile Include="Steps\StepsBinder.cs" />

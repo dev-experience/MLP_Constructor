@@ -11,11 +11,11 @@ namespace WPFConstructor
 {
     public abstract class Step
     {
-
         private Panel content;
         private IEnumerable<Step> dependencies = new List<Step>();
         private Func<bool> completeCondition;
-        private static List<Step> instancies = new List<Step>();
+        private static Dictionary<StepByStepToken, List<Step>> instancies =
+            new Dictionary<StepByStepToken, List<Step>>();
         private bool CheckDependenciesComplete()
         {
             if (dependencies.Count() > 0)
@@ -35,6 +35,7 @@ namespace WPFConstructor
         }
         public bool IsDependenciesComplete => CheckDependenciesComplete();
         public StepAddress Address { get; set; }
+        public StepByStepToken StepToken { get; set; }
         public abstract string Name { get; }
         public Panel Content { get => content; set => content = value; }
         public bool IsComplete => CheckDependenciesComplete() && completeCondition();
@@ -50,23 +51,30 @@ namespace WPFConstructor
         {
             content = CreateContent();
         }
-        public static void Reset<T>() where T : Step, new()
+        public static void Reset<T>(StepByStepToken token) where T : Step, new()
         {
 
-            var instance = instancies.First(x => x.GetType() == typeof(T));
-            instance = instance ?? new T();
-            instancies.Remove(instance);
-            instancies.Add(new T());
+            if (!instancies.ContainsKey(token))
+            {
+                throw new ArgumentException($"Токен {token} не найден в словаре ");
+            }
+            instancies[token].First(x => x.GetType() == typeof(T)).Reset();
         }
-        public static Step GetInstance<T>() where T : Step, new()
+        public static Step GetInstance<T>(StepByStepToken token) where T : Step, new()
         {
-            var instance = instancies.FirstOrDefault(x => x.GetType() == typeof(T));
+            if (!instancies.ContainsKey(token))
+            {
+                instancies.Add(token, new List<Step>());
+            }
+            var instance = instancies[token].FirstOrDefault(x => x.GetType() == typeof(T));
             if (instance == null)
             {
                 instance = new T();
-                instancies.Add(instance);
+                instance.StepToken = token;
+                instance.Reset();
             }
-
+            instancies[token].Remove(instance);
+            instancies[token].Add(instance);
             return instance;
         }
         public override string ToString()
@@ -75,9 +83,8 @@ namespace WPFConstructor
         }
         public Step()
         {
-            content = CreateContent();
             dependencies = CreateDependencies();
-
+           
             completeCondition = CreateCompleteCondition();
         }
     }

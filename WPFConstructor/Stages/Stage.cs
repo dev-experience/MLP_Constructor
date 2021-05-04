@@ -12,16 +12,22 @@ namespace WPFConstructor
 {
     public class Stage
     {
-        public Stage(string name)
+        private StepByStepToken token;
+        public void SetToken(StepByStepToken token)
+        {
+            this.token = token;
+        }
+        internal Stage(string name, StepByStepToken token)
         {
             Name = name;
+            this.token = token;
             Steps = ImmutableList<Step>.Empty;
         }
         public string Name { get; private set; }
         public ImmutableList<Step> Steps { get; private set; }
         public Stage AddSteps(Action<StepsFactory> stepsSelector)
         {
-            var binder = new StepsBinder(Steps);
+            var binder = new StepsBinder(Steps, token);
             stepsSelector(new StepsFactory(binder));
             Steps = Steps.Clear().AddRange(binder.GetSteps());
             return this;

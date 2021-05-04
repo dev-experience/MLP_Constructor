@@ -10,9 +10,12 @@ namespace WPFConstructor.Steps
     internal class StepsBinder
     {
         private ImmutableList<Step> steps = ImmutableList<Step>.Empty;
-        public StepsBinder(IEnumerable<Step> currentSteps)
+        private readonly StepByStepToken token;
+
+        public StepsBinder(IEnumerable<Step> currentSteps, StepByStepToken token)
         {
             steps =steps.AddRange(currentSteps);
+            this.token = token;
         }
         public IEnumerable<Step> GetSteps()
         {
@@ -20,7 +23,7 @@ namespace WPFConstructor.Steps
         }
         public void Bind<T>() where T : Step, new()
         {
-            var step = Step.GetInstance<T>();
+            var step = Step.GetInstance<T>(token);
             if (steps.Contains(step))
             {
                 throw new InvalidOperationException($"Шаг уже существует в этапе. " +
