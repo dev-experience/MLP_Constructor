@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace WPFConstructor.Steps
 {
-    public class ReadmeStep2 : Step
+    internal class ReadmeStep2 : Step
     {
         public override string Name => "Продолжение";
 

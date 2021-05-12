@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLP_Constructor", "MLP_Cons
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFConstructor", "WPFConstructor\WPFConstructor.csproj", "{00F13E55-3F86-431C-A883-C831C9035B0B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultyLayerPerceptron", "MultyLayerPerceptron\MultyLayerPerceptron.csproj", "{C251AE36-EF3E-4704-BC0B-7EB7C36FFB66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{00F13E55-3F86-431C-A883-C831C9035B0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00F13E55-3F86-431C-A883-C831C9035B0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00F13E55-3F86-431C-A883-C831C9035B0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C251AE36-EF3E-4704-BC0B-7EB7C36FFB66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C251AE36-EF3E-4704-BC0B-7EB7C36FFB66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C251AE36-EF3E-4704-BC0B-7EB7C36FFB66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C251AE36-EF3E-4704-BC0B-7EB7C36FFB66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

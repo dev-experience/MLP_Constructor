@@ -7,9 +7,9 @@ using WPFConstructor.Steps;
 
 namespace WPFConstructor.Stages
 {
-    public  class ReadmeStageFactory : StagesFactory
+    internal class ReadmeStageFactory : StagesFactory
     {
-        protected  override IEnumerable<Stage> ConstructStages()
+        protected override IEnumerable<Stage> ConstructStages()
         {
             yield return CreateStage("Readme", x => x
             .AddByType<ReadmeStep1>()
