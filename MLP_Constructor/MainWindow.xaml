@@ -6,12 +6,6 @@
         xmlns:local="clr-namespace:MLP_Constructor"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid >
-        <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid x:Name="a" Grid.Row="0"></Grid>
-        <Grid x:Name="b" Grid.Row="1"></Grid>
+    <Grid Name="mainGrid" >
     </Grid>
 </Window>

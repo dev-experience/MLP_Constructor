@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using WPFConstructor.Stages;
+using WPFConstructor;
 using ConstructorsDictionary = System.Collections.Generic
     .Dictionary<WPFConstructor
         .StepByStepToken, WPFConstructor
@@ -22,6 +22,8 @@ namespace WPFConstructor
         private Menu menu;
         private Panel footer;
         private Panel content;
+        private RoutedEventHandler OnFileOpen;
+        private RoutedEventHandler OnFileSave;
         /// <summary>
         /// Устанавливает новые габариты целевого представления
         /// </summary>
@@ -37,15 +39,23 @@ namespace WPFConstructor
             targetContainer.RowDefinitions.Add(content ?? new RowDefinition());
             targetContainer.RowDefinitions.Add(footer ?? new RowDefinition());
         }
-        /// <summary>
-        /// Выберите, если не знакомы с инструментом
-        /// </summary>
-        /// <param name="targetContainer">Передайте в качестве параметра стандартный Grid с формы и запустите проект</param>
-        /// <returns></returns>
-        public static StepByStepToken Readme(Grid targetContainer)
+        public void SetOnOpen(RoutedEventHandler onOpen)
         {
-            return New(targetContainer, new ReadmeStageFactory());
+            OnFileOpen = onOpen;
         }
+        public void SetOnSave(RoutedEventHandler onSave)
+        {
+            OnFileSave = onSave;
+        }
+        private void OnFileOpenClick(object sender, RoutedEventArgs e)
+        {
+            OnFileOpen?.Invoke(sender, e);
+        }
+        private void OnFileSaveClick(object sender, RoutedEventArgs e)
+        {
+            OnFileSave?.Invoke(sender, e);
+        }
+
         /// <summary>
         /// Создает новый конструктор и отрисовывает его на целевом представлении. 
         /// </summary>
@@ -54,7 +64,7 @@ namespace WPFConstructor
         /// <param name="dataContext">Данные, над которыми производятся манипуляции в конструкторе</param>
         /// <returns>Ассоциированный с этим конструктором токен, в котором содержатся данные</returns>
         public static StepByStepToken New(Grid targetContainer,
-            StagesFactory stagesProvider, object dataContext=null)
+            StagesFactory stagesProvider, object dataContext = null)
         {
             var token = stagesProvider.Token;
             token.DataContext = dataContext;
@@ -62,8 +72,7 @@ namespace WPFConstructor
                 new StepByStepWPFConstructor(targetContainer, stagesProvider, token));
             return token;
         }
-        private StepByStepWPFConstructor(Grid targetContainer,
-            StagesFactory stagesProvider, StepByStepToken token)
+        private StepByStepWPFConstructor(Grid targetContainer, StagesFactory stagesProvider, StepByStepToken token)
         {
             this.targetContainer = targetContainer;
             Resize(
@@ -76,7 +85,25 @@ namespace WPFConstructor
             constructor.ContentChanged += OnEntryContentChanged;
             constructor.FooterChanged += OnFooterChanged;
             constructor.MenuChanged += OnMenuChanged;
-            constructor.Relocate();
+            constructor.OnOpenFile += OnFileOpenClick;
+            constructor.OnSaveFile += OnFileSaveClick;
+            SetOnOpen((x, y) => SetShowContent(true));
+            SetOnSave((x, y) => SetShowContent(false));
+            constructor.Load();
+        }
+        public void Update()
+        {
+
+            constructor.Update();
+        }
+        public void Recheck()
+        {
+            constructor.Recheck();
+        }
+        public void SetShowContent(bool value)
+        {
+            constructor.ContentEnabled = value;
+            constructor.Load();
         }
         private void RedrawMenu(Menu menu)
         {

@@ -15,9 +15,9 @@ namespace WPFConstructor
             for (int i = 0; i < lengths.Length; i++)
             {
                 grid.ColumnDefinitions.Add(
-                    new ColumnDefinition() 
-                    { 
-                        Width = new GridLength(lengths[i], type) 
+                    new ColumnDefinition()
+                    {
+                        Width = new GridLength(lengths[i], type)
                     });
             }
         }

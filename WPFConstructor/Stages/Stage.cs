@@ -21,10 +21,10 @@ namespace WPFConstructor
         {
             Name = name;
             this.token = token;
-            Steps = ImmutableList<Step>.Empty;
+            Steps = ImmutableList<CustomStep>.Empty;
         }
         public string Name { get; private set; }
-        public ImmutableList<Step> Steps { get; private set; }
+        public ImmutableList<CustomStep> Steps { get; private set; }
         public Stage AddSteps(Action<StepsFactory> stepsSelector)
         {
             var binder = new StepsBinder(Steps, token);

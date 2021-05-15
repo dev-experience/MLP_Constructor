@@ -17,7 +17,7 @@ namespace WPFConstructor.Steps
 
        
 
-        public StepsFactory AddByType<T>() where T : Step ,new()
+        public StepsFactory AddByType<T>() where T : CustomStep ,new()
         {
             stepsBinder.Bind<T>();
             return this;

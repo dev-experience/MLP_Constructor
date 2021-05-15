@@ -15,31 +15,60 @@ namespace WPFConstructor
         public event UIElementChangedEventHandler MenuChanged;
         public event UIElementChangedEventHandler ContentChanged;
         public event UIElementChangedEventHandler FooterChanged;
+        public event RoutedEventHandler OnOpenFile;
+        public event RoutedEventHandler OnSaveFile;
+
         private Menu menu;
         private Panel content;
         private Panel footer;
+        public bool ContentEnabled { get; set; }
         public List<Stage> Stages { get; set; }
-        public StepAddress CurrentAddress { get; private set; }
+        private StepAddress currentAddress;
+        private readonly StepByStepToken token;
+
         public Constructor(StagesFactory stagesProvider, StepByStepToken token)
         {
-            
-            CurrentAddress = new StepAddress();
+
+            currentAddress = new StepAddress();
             Stages = new List<Stage>(stagesProvider.GetStages());
+            this.token = token;
         }
 
         private Panel GetContent(StepAddress address)
         {
-            return Stages[CurrentAddress.Stage].GetContent(CurrentAddress.Step);
+            if (ContentEnabled)
+            {
+                return FindStepByAddress(address).Content;
+            }
+            else
+            {
+                return new Grid();
+            }
+        }
+
+        private void SaveMenuClick(object sender, RoutedEventArgs e)
+        {
+            OnSaveFile?.Invoke(sender, e);
+        }
+
+        private void OpenMenuClick(object sender, RoutedEventArgs e)
+        {
+            OnOpenFile?.Invoke(sender, e);
         }
         private MenuItem CreateFileMenu()
         {
             MenuItem file = new MenuItem() { Header = "Файл" };
             MenuItem open = new MenuItem() { Header = "Открыть" };
-            MenuItem save = new MenuItem() { Header = "Сохранить" };
+            open.Click += OpenMenuClick;
             file.Items.Add(open);
+            if (token.DataContext is null) return file;
+
+            MenuItem save = new MenuItem() { Header = "Сохранить" };
+            save.Click += SaveMenuClick;
             file.Items.Add(save);
             return file;
         }
+
         private MenuItem CreateNavigationMenu()
         {
             MenuItem nav = new MenuItem { Header = "Навигация" };
@@ -49,14 +78,14 @@ namespace WPFConstructor
                 foreach (var step in stage.Steps)
                 {
                     var isAvaliable = step.IsDependenciesComplete;
-                    var incomlpeteStep = step.Dependencies.FirstOrDefault(x=>!x.IsComplete);
+                    var incomlpeteStep = step.Dependencies.FirstOrDefault(x => !x.IsComplete);
                     StringBuilder str = new StringBuilder();
                     str.Append(step);
                     if (incomlpeteStep != null)
                     {
                         str.Append($" (Необходимо: {incomlpeteStep.Address})");
                     }
-                    
+
                     var stepItem = new MenuItem { DataContext = step, Header = str };
                     stepItem.IsEnabled = incomlpeteStep == null;
                     stepItem.Click += NavigationMenuClick;
@@ -69,7 +98,7 @@ namespace WPFConstructor
 
         private void NavigationMenuClick(object sender, RoutedEventArgs e)
         {
-            var targetAddress = ((sender as MenuItem).DataContext as Step).Address;
+            var targetAddress = ((sender as MenuItem).DataContext as CustomStep).Address;
             Relocate(targetAddress);
         }
 
@@ -78,35 +107,45 @@ namespace WPFConstructor
             Menu _menu = new Menu();
 
             _menu.Items.Add(CreateFileMenu());
-            _menu.Items.Add(CreateNavigationMenu());
+            if (ContentEnabled)
+            {
+                _menu.Items.Add(CreateNavigationMenu());
+            }
             return _menu;
         }
 
         private void ForwardButtonClick(object sender, RoutedEventArgs e)
         {
-            var nextStep = GetNextStep(CurrentAddress);
+            var nextStep = GetNextStep(currentAddress);
             Relocate(nextStep.Address);
         }
         private void BackButtonClick(object sender, RoutedEventArgs e)
         {
-            var prevStep = GetPreviewStep(CurrentAddress);
+            var prevStep = GetPreviewStep(currentAddress);
             Relocate(prevStep.Address);
-        }
-        private void UpdateButtonClick(object sender, RoutedEventArgs e)
-        {
-            var currentStep = FindStepByAddress(CurrentAddress);
-            currentStep.Reset();
-            ContentChanged?.Invoke(this, currentStep.Content);
         }
         private void EndButtonClick(object sender, RoutedEventArgs e)
         {
-            var address = CurrentAddress;
+            var address = currentAddress;
             while (IsNextAvaliable(address))
             {
                 address = GetNextStep(address).Address;
             }
             Relocate(address);
         }
+
+        internal void Load()
+        {
+            if (ContentEnabled)
+            {
+                EndButtonClick(null, null);
+            }
+            else
+            {
+                UpdateMenu();
+            }
+        }
+
         private Button CreateButton(object content, int row, int column, RoutedEventHandler click, bool isEnabled)
         {
             Button btn = new Button();
@@ -120,16 +159,19 @@ namespace WPFConstructor
 
         private Panel CreateFooter(StepAddress address = default)
         {
+
             Grid footerGrid = new Grid();
-            var isNextAvaliable = IsNextAvaliable(CurrentAddress);
-            footerGrid.AddColumns(GridUnitType.Star, 0.5,1, 0.5, 1, 0.5);
+            if (!ContentEnabled)
+            {
+                return footerGrid;
+            }
+            var isNextAvaliable = IsNextAvaliable(currentAddress);
+            footerGrid.AddColumns(GridUnitType.Star, 0.5, 1, 1, 0.5);
             var column = 0;
             footerGrid.Children.Add(CreateButton(
-               "В начало", 0, column++, (plug1, plug2) => Relocate(), IsPreviewAvaliable(CurrentAddress)));
+               "В начало", 0, column++, (plug1, plug2) => Relocate(), IsPreviewAvaliable(currentAddress)));
             footerGrid.Children.Add(CreateButton(
-                "Назад", 0, column++, BackButtonClick, IsPreviewAvaliable(CurrentAddress)));
-            footerGrid.Children.Add(CreateButton(
-                "Сбросить", 0, column++, UpdateButtonClick, true));
+                "Назад", 0, column++, BackButtonClick, IsPreviewAvaliable(currentAddress)));
             footerGrid.Children.Add(CreateButton(
                 "Вперед", 0, column++, ForwardButtonClick, isNextAvaliable));
             footerGrid.Children.Add(CreateButton(
@@ -140,13 +182,13 @@ namespace WPFConstructor
 
 
 
-        private Step FindStepByAddress(StepAddress address)
+        private CustomStep FindStepByAddress(StepAddress address)
         {
             return Stages
                 .SelectMany(x => x.Steps)
                 .FirstOrDefault(x => x.Address == address);
         }
-        private Step GetPreviewStep(StepAddress address)
+        private CustomStep GetPreviewStep(StepAddress address)
         {
             if (address == new StepAddress(0, 0))
             {
@@ -178,21 +220,46 @@ namespace WPFConstructor
             var next = GetNextStep(address);
             return next != null && next.IsDependenciesComplete;
         }
-        private Step GetNextStep(StepAddress address)
+        private CustomStep GetNextStep(StepAddress address)
         {
             return FindStepByAddress(new StepAddress(address.Step + 1, address.Stage)) ??
                 FindStepByAddress(new StepAddress(stage: address.Stage + 1));
         }
+        public void Update()
+        {
+            UpdateMenu();
+            UpdateContent();
+            UpdateFooter();
+        }
+        public void Recheck()
+        {
+            UpdateMenu();
+            UpdateFooter();
+        }
+        private void UpdateContent()
+        {
+            content = GetContent(currentAddress);
+            ContentChanged?.Invoke(this, content);
+        }
+        private void UpdateFooter()
+        {
+            footer = CreateFooter(currentAddress);
+            FooterChanged?.Invoke(this, footer);
+        }
+
+        private void UpdateMenu()
+        {
+            menu = CreateMenu();
+            MenuChanged?.Invoke(this, menu);
+        }
         public void Relocate(StepAddress address = default)
         {
-            CurrentAddress = address;
-            footer = CreateFooter(CurrentAddress);
-            menu = CreateMenu();
-            content = GetContent(CurrentAddress);
-
-            MenuChanged?.Invoke(this, menu);
-            ContentChanged?.Invoke(this, content);
-            FooterChanged?.Invoke(this, footer);
+            foreach (var item in Stages.SelectMany(x => x.Steps))
+            {
+                item.Reset();
+            }
+            currentAddress = address;
+            Update();
         }
     }
 }
