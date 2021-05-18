@@ -66,6 +66,7 @@ namespace WPFConstructor
             content = CreateContent();
             isInit = true;
             UpdateContent();
+            Check();
         }
         protected virtual void UpdateContent()
         {

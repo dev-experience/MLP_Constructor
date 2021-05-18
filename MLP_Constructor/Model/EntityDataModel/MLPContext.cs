@@ -12,7 +12,7 @@ namespace MLP_Constructor.Model.EntityDataModel
         private const string local = "data source=(LocalDb)\\MSSQLLocalDB;initial catalog=MLP_Constructor.Model.EntityDataModel.Multilayer perceptrons;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework";
         private const string connection = "data source=.\\SQLEXPRESS;initial catalog=Multilayer perceptrons;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework";
         public MLPContext()
-            : base(local)
+            : base(connection)
         {
         }
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -22,7 +22,7 @@ namespace MLP_Constructor.Model.EntityDataModel
         }
         public override int SaveChanges()
         {
-            DateTime now = DateTime.Now;
+           
             foreach (var changedEntity in ChangeTracker.Entries())
             {
                 if(changedEntity.Entity is IEntitySave savedEntity)

@@ -16,7 +16,25 @@ namespace MultyLayerPerceptron
         public double this[int index]
         {
             get { return base[index, 0]; }
-            set { base[index,0] = value; }
+            set { base[index, 0] = value; }
+        }
+        public int MaxIndex()
+        {
+            int index = 0;
+            double max;
+            if (Length == 1)
+            {
+                return 0;
+            }
+            for (int i = 1; i < Length; i++)
+            {
+                max = this[index];
+                if (this[i] >= max)
+                {
+                    index = i;
+                }
+            }
+            return index;
         }
     }
 }

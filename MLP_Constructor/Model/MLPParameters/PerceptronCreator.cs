@@ -1,4 +1,5 @@
-﻿using MultyLayerPerceptron.CalculatingGraph.GraphParameters;
+﻿using MultyLayerPerceptron;
+using MultyLayerPerceptron.CalculatingGraph.GraphParameters;
 using MultyLayerPerceptron.CalculatingGraph.Network;
 using System;
 using System.Collections.Generic;
@@ -16,14 +17,15 @@ namespace MLP_Constructor.Model.MLPParameters
         public LearningRateParameter LearningRate { get; set; }
         public DataBaseParameters DataBase { get; set; }
         public List<HiddenLayerParameters> HiddenLayers { get; set; }
-        public bool IsCreated { get; set; }
+        public bool IsTrained { get; set; }
         public PerceptronCreator()
         {
             DataBase = new DataBaseParameters();
             LearningRate = new LearningRateParameter();
             HiddenLayers = new List<HiddenLayerParameters>();
-            LearningRate.LearningRate = 0.05;
+            LearningRate.LearningRate = 0.0;
         }
+        
         private bool CheckCorrectData()
         {
             if (HiddenLayers.Any(x => !x.IsCorrect)) return false;
@@ -31,6 +33,10 @@ namespace MLP_Constructor.Model.MLPParameters
             if (!LearningRate.IsCorrect) return false;
 
             return true;
+        }
+        public void ResetPerceptron()
+        {
+            Perceptron = null;
         }
         public bool TryCreate()
         {
@@ -50,10 +56,12 @@ namespace MLP_Constructor.Model.MLPParameters
             var outputs = DataBase.GetConstructedOutputs().ToArray();
             Perceptron = temp
                 .AddOutput(outputs)
-                .SetLearningRate(LearningRate.LearningRate);
+                .SetLearningRate(0.01)
+                .SetRegularizationRate(0);
 
             return true;
         }
+        
         public override string ToString()
         {
             return $"[{Id}] \"{Name}\"";

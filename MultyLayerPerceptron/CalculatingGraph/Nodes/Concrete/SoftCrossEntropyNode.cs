@@ -12,6 +12,10 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
         public Batch Predicted => SoftMax(Left.Compute());
         private Batch SoftMax(Batch input)
         {
+            if (input[0].Values.All(x => x == 0))
+            {
+
+            }
             var res = new Batch(new Vector[input.Size]);
             var sums = new Batch(new Scalar[input.Size]);
             var exps = new Batch(new Vector[input.Size]);
@@ -19,7 +23,12 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
             {
                 exps[i] = input[i]
                     .OperationForEachElement(x => Math.Exp(x));
+
                 var expsVec = exps[i].AsVector;
+               
+              
+                    expsVec.Check();
+             
                 var sum = 0.0;
                 for (int j = 0; j < expsVec.Length; j++)
                 {
@@ -30,13 +39,14 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
                     sum = expsVec.Length;
                 }
                 res[i] = expsVec.OperationForEachElement(x => x / sum);
-
+                
             }
             return res;
         }
         protected override Batch ComputeForwardResult(Batch leftResult,
             Batch rightResult)
         {
+            
             var result = new Batch(new Matrix[leftResult.Size]);
             var softmaxOutput = SoftMax(leftResult);
             var outputLength = leftResult[0].Columns;
@@ -81,6 +91,24 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
             var result = grads.ForEachMatrix(inputGradientResult, (x, y) => x * y);
             return result;
         }
+
+        internal double GetError()
+        {
+            int right = 0;
+            var observedBatch = Right.Compute();
+            var outputBatch = Left.Compute();
+            double all = outputBatch.Size;
+            Vector obsVec;
+            Vector outVec;
+            for (int i = 0; i < outputBatch.Size; i++)
+            {
+                obsVec = observedBatch[i].AsVector;
+                outVec = outputBatch[i].AsVector;
+                if (obsVec.MaxIndex() == outVec.MaxIndex()) right++;
+            }
+            return (all - right) / all;
+        }
+
 
         protected override Batch ComputeGradientByRight(Batch inputGradientResult, Batch leftResult, Batch rightResult)
         {

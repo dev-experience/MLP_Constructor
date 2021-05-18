@@ -97,10 +97,14 @@
     </Compile>
     <Compile Include="Model\DataBase.cs" />
     <Compile Include="Model\EntityDataModel\IEntitySave.cs" />
+    <Compile Include="Model\MLPParameters\IDbColumn.cs" />
+    <Compile Include="Model\MLPParameters\Trainer.cs" />
+    <Compile Include="Model\Steps\DataPreprocessingStep.cs" />
     <Compile Include="Model\Steps\DataSourceSelectionStep.cs" />
     <Compile Include="Model\Stages\MLPStagesFactory.cs" />
     <Compile Include="Model\Steps\InputOutputSelectionStep.cs" />
     <Compile Include="Model\Steps\MLPArchitectionSelectStep.cs" />
+    <Compile Include="Model\Steps\TrainPerceptronStep.cs" />
     <Compile Include="Model\Supported\OpenFileEventArgs.cs" />
     <Compile Include="Model\Supported\OpenFileEventHandler.cs" />
     <Compile Include="Model\Supported\ProviderSelector.cs" />

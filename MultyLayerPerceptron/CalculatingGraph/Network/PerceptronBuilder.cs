@@ -28,7 +28,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
         }
         private PerceptronBuilder()
         {
-            ActivationFunc = OperationsFactory.LeakyReLU(0.0001);
+            ActivationFunc = OperationsFactory.LeakyReLU(0.01);
             Weights = new List<Matrix>();
         }
         public static HiddenLayer AddInput(params Input[] inputs)

@@ -31,7 +31,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
         public HiddenLayer AddHidden(int size)
         {
 
-            return AddHidden(Matrix.Rand(GetLastSize(), size));
+            return AddHidden(Matrix.Rand(GetLastSize(), size, -1, 1));
         }
         public HiddenLayer AddHidden(Matrix weights)
         {
@@ -46,7 +46,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
         public Perceptron AddOutput(params Output[] outputs)
         {
             if (outputs is null) throw new ArgumentNullException(nameof(outputs));
-            perceptron.Weights.Add(Matrix.Rand(GetLastSize(),outputs.Length));
+            perceptron.Weights.Add(Matrix.Rand(GetLastSize(), outputs.Length, -1, 1));
             perceptron.Outputs = outputs;
             return new Perceptron(perceptron);
         }
@@ -65,7 +65,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
             }
             perceptron.Weights.Add(weights);
             perceptron.Outputs = outputs;
-            
+
             return new Perceptron(perceptron);
         }
     }

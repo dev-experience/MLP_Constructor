@@ -45,6 +45,7 @@ namespace MLP_Constructor.ViewModel
         }
         public MainWindowViewModel(MainWindow mainWindow)
         {
+            
             mainWindow.Title = "Конструктор нейросетей";
             MainWindow = mainWindow;
             Token = StepByStepWPFConstructor.New(MainWindow.mainGrid,

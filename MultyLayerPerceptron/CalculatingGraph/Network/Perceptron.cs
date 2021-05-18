@@ -60,9 +60,9 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
             }
             return res;
         }
-        public Matrix[] Train(params Tuple<Vector, Vector>[] inputOutputTuple)
+        public void Check(out double error, IEnumerable<Tuple<Vector, Vector>> inputOutputTuple)
         {
-            SetBatchSize(inputOutputTuple.Length);
+            SetBatchSize(inputOutputTuple.Count());
             var inputs = inputOutputTuple.Select(x => x.Item1).ToArray();
             var outputs = inputOutputTuple.Select(x => x.Item2).ToArray();
             CheckInputs(inputs);
@@ -70,10 +70,27 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
             input.Initiate(GetNormalize(inputs));
             observedInput.Initiate(outputs);
             var est = estimation.Compute();
+            error = output.GetError();
+            OnResetData?.Invoke(false);
+        }
+        public Matrix[] Train(out double error,  IEnumerable<Tuple<Vector, Vector>> inputOutputTuple)
+        {
+            SetBatchSize(inputOutputTuple.Count());
+            var inputs = inputOutputTuple.Select(x => x.Item1).ToArray();
+            var outputs = inputOutputTuple.Select(x => x.Item2).ToArray();
+            CheckInputs(inputs);
+            CheckOutputs(outputs);
+            input.Initiate(GetNormalize(inputs));
+            observedInput.Initiate(outputs);
+            var est = estimation.Compute();
+            error = output.GetError();
             BackProp();
             OnResetData?.Invoke(false);
             return weightsNodes.Select(x => x.Compute()[0]).ToArray();
-
+        }
+        public Matrix[] Train(params Tuple<Vector, Vector>[] inputOutputTuple)
+        {
+            return Train(out var plug, inputOutputTuple);
         }
 
         private void Subscribe(IEnumerable<Node> nodes)

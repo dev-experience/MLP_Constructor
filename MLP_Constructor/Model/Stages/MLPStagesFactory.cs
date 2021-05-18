@@ -15,7 +15,9 @@ namespace MLP_Constructor.Model.Stages
             yield return CreateStage("Конфигурация нейросети", x => x
              .AddByType<DataSourceSelectionStep>()
              .AddByType<InputOutputSelectionStep>()
+             .AddByType<DataPreprocessingStep>()
              .AddByType<MLPArchitectionSelectStep>()
+             .AddByType<TrainPerceptronStep>()
             );
         }
     }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MLP_Constructor.Model.MLPParameters
 {
-    public class OutputParameters : PerceptronParameter
+    public class OutputParameters : PerceptronParameter,IDbColumn
     {
         public string Name { get; set; }
         public List<string> AlternativeNames { get; set; }
@@ -66,5 +66,7 @@ namespace MLP_Constructor.Model.MLPParameters
         {
             return !(Name is null);
         }
+        public string DbType => "DECIMAL(18,6)";
+        public string DbName => $"[{Name}]";
     }
 }

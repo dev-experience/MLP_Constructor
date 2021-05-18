@@ -14,14 +14,15 @@ namespace MultyLayerPerceptron.Operations
         {
             this.parameter = parameter;
         }
-        protected override Func<double, double> ConstructBack()
-        {
-            return x => x > 0 ? 1 : parameter;
-        }
+        
 
         protected override Func<double, double> ConstructForward()
         {
             return x => x > 0 ? x : parameter * x;
+        }
+        protected override Func<double, double> ConstructBack()
+        {
+            return x => x >= 0 ? 1 : parameter;
         }
     }
 }

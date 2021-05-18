@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MultyLayerPerceptron
 {
-    public class Matrix : ISummable<Matrix>,ICloneable
+    public class Matrix : ISummable<Matrix>, ICloneable
     {
         public double this[int row, int col]
         {
@@ -23,7 +23,7 @@ namespace MultyLayerPerceptron
             {
                 Values[row * Columns + i] = values[i];
             });
-         
+
         }
         public void InsertColumn(int column, params double[] values)
         {
@@ -33,6 +33,7 @@ namespace MultyLayerPerceptron
             });
         }
         public Vector AsVector => TryTransformToVector();
+
         private Vector TryTransformToVector()
         {
             if (Columns != 1)
@@ -53,7 +54,7 @@ namespace MultyLayerPerceptron
         {
             if (second.IsScalar())
             {
-                second = new Matrix(Rows, Columns, null).Fill(second[0, 0]);       
+                second = new Matrix(Rows, Columns, null).Fill(second[0, 0]);
             }
             if (Rows != second.Rows || Columns != second.Columns)
             {
@@ -71,6 +72,22 @@ namespace MultyLayerPerceptron
             }
             return first;
         }
+
+        public void Check()
+        {
+            for (int i = 0; i < Values.Length; i++)
+            {
+                if (double.IsNaN(Values[i]))
+                {
+                    throw new Exception("NaN");
+                }
+                if (double.IsInfinity(Values[i]))
+                {
+                    throw new Exception("infinity");
+                }
+            }
+        }
+
         public Matrix ElementByElementMultiplication(Matrix second)
         {
 
@@ -84,7 +101,7 @@ namespace MultyLayerPerceptron
             {
                 for (int col = 0; col < Columns; col++)
                 {
-                    matrix[col, row] = this[row,col];
+                    matrix[col, row] = this[row, col];
                 }
             }
             return matrix;
@@ -106,8 +123,8 @@ namespace MultyLayerPerceptron
         {
             var res = this.Clone() as Matrix;
             Parallel.For(0, Values.Length, (i) =>
-              { 
-                  res.Values[i] = operation(Values[i]); 
+              {
+                  res.Values[i] = operation(Values[i]);
               });
             return res;
         }
@@ -235,6 +252,6 @@ namespace MultyLayerPerceptron
         {
             return new Vector(value);
         }
-        
+
     }
 }

@@ -138,11 +138,18 @@ namespace WPFConstructor
         {
             if (ContentEnabled)
             {
+                foreach (var item in Stages.SelectMany(x=>x.Steps))
+                {
+                    item.Reset();
+                }
+
                 EndButtonClick(null, null);
             }
             else
             {
                 UpdateMenu();
+                ContentChanged?.Invoke(this, new Grid());
+                FooterChanged?.Invoke(this, new Grid());
             }
         }
 

@@ -20,7 +20,20 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
             var ownGrad = GetOwnGradient();
             var addiction = ownGrad * LearningRate;
 
-           result= result.ForEachMatrix(addiction, (x, y) => x - y);
+            if (addiction is FakeBatch fake)
+            {
+                fake[0].Check();
+            }
+            else
+            {
+
+                for (int i = 0; i < addiction.Size; i++)
+                {
+                    addiction[i].Check();
+                }
+            }
+
+            result = result.ForEachMatrix(addiction, (x, y) => x - y);
         }
         public void Initiate(Matrix weights,
             WeightDirectionType directionType = WeightDirectionType.FromTo)

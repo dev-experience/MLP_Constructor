@@ -1,4 +1,6 @@
-﻿using MLP_Constructor.Model.Supported;
+﻿using MLP_Constructor.Model.DBContext;
+using MLP_Constructor.Model.Supported;
+using MultyLayerPerceptron;
 using MultyLayerPerceptron.CalculatingGraph;
 using MultyLayerPerceptron.CalculatingGraph.GraphParameters;
 using System;
@@ -6,53 +8,186 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MLP_Constructor.Model.MLPParameters
 {
     public class DataBaseParameters : PerceptronParameter
     {
+        private const string prefix = "Support_";
+        public double TrainDataPart => 0.8;
 
-        public double TrainDataPart { get; set; }
+        public int GetDataCount()
+        {
+            if (!TryConstructConnectionString(out var connection)) return -1;
+            if (!IsTableExist(true)) return -1;
+            using (var context = DataBase.Context(connection))
+            {
+                return context.GetCount(FormattedTableName());
+            }
+        }
+        private IEnumerable<Tuple<Vector, Vector>> GetTrainDataPacket(int[] ids, DataBaseContext context)
+        {
+            foreach (var item in context
+                             .GetInputOutputData(FormattedTableName(),
+                             ids.ToList(), Inputs, Outputs))
+            {
+                yield return item;
+            }
+        }
+        public IEnumerable<Tuple<Vector, Vector>> GetTrainData(int[] ids)
+        {
+            if (!TryConstructConnectionString(out var connection)) yield break;
+            using (var context = DataBase.Context(connection))
+            {
+                if (ids.Length < 100)
+                {
+                    foreach (var item in GetTrainDataPacket(ids, context))
+                    {
+                        yield return item;
+                    }
+                    yield break;
+                }
 
+                
+                List<int> miniIds = new List<int>();
+                for (int i = 0; i < ids.Length; i++)
+                {
+                    miniIds.Add(ids[ i]);
+                    
+                    if (i % 100 == 0)
+                    {
+                        foreach (var item in GetTrainDataPacket(miniIds.ToArray(), context))
+                        {
+                            yield return item;
+                        }
+                        miniIds.Clear();
+                    }
+                }
+                foreach (var item in GetTrainDataPacket(miniIds.ToArray(), context))
+                {
+                    yield return item;
+                }
+
+            }
+        }
+
+        public int Postfix { get; set; }
         public List<InputParameters> Inputs { get; set; }
         public List<OutputParameters> Outputs { get; set; }
-        private string outputClassName;
-        public string OutputClassName 
+        public string OldOutputClassName { get; set; }
+        public string OutputClassName
         {
-            get => outputClassName;
+            get => OldOutputClassName;
             set
             {
-                if (outputClassName != value)
+                if (OldOutputClassName != value)
                 {
                     Outputs.Clear();
-                    outputClassName = value;
+                    OldOutputClassName = value;
                 }
             }
         }
         public string Provider { get; set; }
-        public string source;
+        public string OldSource { get; set; }
         public string Source
         {
-            get => source;
+            get => OldSource;
             set
             {
-                if(source != value)
+                if (OldSource != value)
                 {
                     Inputs.Clear();
                     Outputs.Clear();
-                    source = value;
+                    OldSource = value;
                 }
             }
         }
-        public string TableName { get; set; }
-        public bool IsSupportTable { get; set; }
+        public string RowTableName { get; set; }
+        public string TableName
+        {
+            get => RowTableName;
+            set
+            {
+                var name = ToRowTableName(value);
+                if (RowTableName != name)
+                {
+                    Outputs.Clear();
+                    Inputs.Clear();
+                    RowTableName = name;
+                }
+            }
+        }
+
+
+        private string ToRowTableName(string name)
+        {
+            if (name.StartsWith(prefix))
+            {
+                return Regex.Replace(name, @"(\W*)", "").Replace(prefix, "");
+            }
+            else
+            {
+                return name;
+            }
+        }
+        public string FormattedTableName()
+        {
+            string postf = Postfix > 0 ? $" ({Postfix})" : "";
+            return prefix + TableName + postf;
+        }
         public DataBaseParameters()
         {
             Outputs = new List<OutputParameters>();
             Inputs = new List<InputParameters>();
         }
+        public async Task NormalizeAsync()
+        {
+            await Task.Run(NormalizeInputs);
+        }
 
+        private void NormalizeInputs()
+        {
+            if (!TryConstructConnectionString(out var connection)) return;
+            using (var context = DataBase.Context(connection))
+            {
+                Inputs = context.GetNormalizedInputs(FormattedTableName(), Inputs);
+            }
+        }
+
+        public async Task RelocateAsync()
+        {
+            var task = Task.Run(Relocate);
+            await task;
+        }
+        private void Relocate()
+        {
+            if (!TryConstructConnectionString(out var connection)) return;
+            using (var context = DataBase.Context(connection))
+            {
+                List<IDbColumn> cols = new List<IDbColumn>();
+                cols.AddRange(Inputs);
+                cols.AddRange(Outputs);
+                context.RelocateData(TableName,
+                    FormattedTableName(),
+                    OutputClassName,
+                    Inputs.ToArray(),
+                    Outputs.ToArray());
+            }
+        }
+        public void CreateTable()
+        {
+
+            if (!TryConstructConnectionString(out var connection)) return;
+            using (var context = DataBase.Context(connection))
+            {
+                List<IDbColumn> cols = new List<IDbColumn>();
+                cols.AddRange(Inputs);
+                cols.AddRange(Outputs);
+                Postfix = context.CreateSupportTable(prefix, RowTableName, cols.ToArray());
+            }
+        }
         public void CollapseOutputs(string toAdd, string toRemove)
         {
             AddOutputAlternative(toAdd, toRemove);
@@ -91,9 +226,13 @@ namespace MLP_Constructor.Model.MLPParameters
             if (!TryConstructConnectionString(out var connection)) yield break;
             using (var context = DataBase.Context(connection))
             {
-                foreach (var variantName in context.GetOutputVariants(TableName, OutputClassName))
+                if (context.IsTableWithColumnsExist(TableName))
                 {
-                    yield return variantName;
+
+                    foreach (var variantName in context.GetOutputVariants(TableName, OutputClassName))
+                    {
+                        yield return variantName;
+                    }
                 }
             }
         }
@@ -126,7 +265,7 @@ namespace MLP_Constructor.Model.MLPParameters
                 }
             }
         }
-        public bool IsTableExist()
+        public bool IsTableExist(bool support)
         {
             if (!TryConstructConnectionString(out var connectionString))
             {
@@ -134,7 +273,7 @@ namespace MLP_Constructor.Model.MLPParameters
             }
 
             List<string> columnsNames = Inputs.Select(x => x.Name).ToList();
-            if (IsSupportTable)
+            if (support)
             {
                 columnsNames.AddRange(Outputs.Select(x => x.Name).ToList());
             }
@@ -142,20 +281,25 @@ namespace MLP_Constructor.Model.MLPParameters
             {
                 columnsNames.Add(OutputClassName);
             }
-            string tableName = IsSupportTable ? "Support_" : "";
-            tableName += TableName;
-            bool isExist = false;
+
             using (var context = DataBase.Context(connectionString))
             {
-                isExist = context.IsTableWithColumnsExist(tableName, columnsNames.ToArray());
+                if (support)
+                {
+                    return context.IsTableWithColumnsExist(FormattedTableName(), columnsNames.ToArray());
+                }
+                else
+                {
+                    return context.IsTableWithColumnsExist(TableName, columnsNames.ToArray());
+                }
             }
-            return isExist;
         }
         protected override bool CheckCorrect()
         {
             if (!IsAvaliableProvider()) return false;
             if (TableName is null) return false;
             if (Outputs.Any(x => !x.IsCorrect) && OutputClassName is null) return false;
+            if (Inputs.Any(x => !x.IsCorrect)) return false;
             if (!File.Exists(Source)) return false;
             if (!IsAvaliableProvider()) return false;
             if (TrainDataPart < 0 || TrainDataPart > 1) return false;
@@ -174,7 +318,7 @@ namespace MLP_Constructor.Model.MLPParameters
 
             foreach (var item in Inputs)
             {
-                var input = new Input<double>(item.MinValue, item.MinValue, new DoubleNormalizeProvider());
+                var input = new Input<double>(item.MinValue, item.MaxValue, new DoubleNormalizeProvider());
                 input.Name = item.Name;
                 yield return input;
             }

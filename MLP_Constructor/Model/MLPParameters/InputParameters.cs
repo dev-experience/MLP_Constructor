@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MLP_Constructor.Model.MLPParameters
 {
-    public class InputParameters : PerceptronParameter
+    public class InputParameters : PerceptronParameter,IDbColumn
     {
         public double MinValue { get; set; }
         public double MaxValue { get; set; }
@@ -23,5 +23,19 @@ namespace MLP_Constructor.Model.MLPParameters
         {
             return MinValue < MaxValue && !(Name is null);
         }
+        public void SetMinMaxValue(double value)
+        {
+            if (value >= MaxValue)
+            {
+                MaxValue = value;
+            }
+            else if(value<=MinValue)
+            {
+                MinValue = value;
+            }
+        }
+        public string DbType => "DECIMAL(18,6)";
+        public string DbName => $"[{Name}]";
+
     }
 }
