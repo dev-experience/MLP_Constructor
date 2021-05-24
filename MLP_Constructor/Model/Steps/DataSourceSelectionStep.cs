@@ -3,6 +3,7 @@ using MLP_Constructor.Model.MLPParameters;
 using MLP_Constructor.Model.Supported;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,8 +21,9 @@ namespace MLP_Constructor.Model.Steps
         private TextBox fileName;
         protected override bool CheckComplete()
         {
-            var db = StepToken.GetContext<PerceptronCreator>().DataBase;
-            return db.GetTableNames().Contains(db.TableName);
+            var db = creator.DataBase;
+            bool res = db.GetTableNames().Contains(db.TableName);
+            return res;
         }
         private StackPanel CreateTablesList()
         {
@@ -116,7 +118,7 @@ namespace MLP_Constructor.Model.Steps
             {
                 StepToken.GetContext<PerceptronCreator>().
                     DataBase.Source = dlg.FileName;
-                Update(true);
+                Reload();
 
             }
 

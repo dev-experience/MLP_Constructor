@@ -15,13 +15,15 @@ namespace MLP_Constructor.Model.Steps
     {
         public override string Name => "Тренеровка нейросети";
         private Button trainButton;
-        private Button checkButton;
         private ScrollViewer trainList;
-        private ScrollViewer checkList;
         private StackPanel checkContainer;
         private StackPanel trainContainer;
         private PerceptronCreator creator;
         private Trainer trainer;
+        private double sum = 0;
+        private double experimentCount = 0;
+        private List<double> last = new List<double>();
+
         protected override IEnumerable<CustomStep> CreateDependencies()
         {
             yield return GetInstance<MLPArchitectionSelectStep>(StepToken);
@@ -34,6 +36,7 @@ namespace MLP_Constructor.Model.Steps
             {
                 trainer = new Trainer(creator);
             }
+
         }
         protected override Panel CreateContent()
         {
@@ -42,59 +45,50 @@ namespace MLP_Constructor.Model.Steps
             trainContainer = new StackPanel();
             trainList = new ScrollViewer();
             trainList.Content = trainContainer;
-            checkList = new ScrollViewer();
-            checkList.Content = checkContainer;
             trainButton = new Button();
             trainButton.Click += OnTrainButtonClick;
-            checkButton = new Button();
-            checkButton.Click += OnCheckButtonClick;
-            checkButton.Content = "Проверить обобщаемость сети";
             var content = new Grid();
-            content.AddRows(GridUnitType.Pixel, 30);
-            content.AddRows(GridUnitType.Star, 1);
             content.AddRows(GridUnitType.Pixel, 30);
             content.AddRows(GridUnitType.Star, 1);
             Grid.SetRow(trainButton, 0);
             Grid.SetRow(trainList, 1);
-            Grid.SetRow(checkButton, 2);
-            Grid.SetRow(checkList, 3);
             content.Children.Add(trainButton);
             content.Children.Add(trainList);
-            content.Children.Add(checkButton);
-            content.Children.Add(checkList);
             return content;
 
         }
 
-        private void OnCheckButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (!creator.IsTrained)
-            {
-                var tb = new TextBlock();
-                tb.Text = $"Сеть не обучена";
 
-            }
-            checkButton.IsEnabled = false;
-            while (trainer.Train())
-            {
-                var tb = new TextBlock();
-                tb.Text = $"Текущая ошибка: {trainer.Error * 100}%";
-                checkContainer.Children.Add(tb);
-                checkList.ScrollToBottom();
-            }
-        }
         private async void OnTrainButtonClick(object sender, RoutedEventArgs e)
         {
+            for (int i = 0; i < 100; i++)
+            {
+                last.Add(100);
+            }
             trainButton.IsEnabled = false;
-            var tb = new TextBlock();
-            trainContainer.Children.Add(tb);
             while (await trainer.TrainAsync())
             {
-                tb.Text = $"Текущая ошибка: {trainer.Error * 100}%";
-                //trainContainer.Children.Clear();
-               // trainList.ScrollToBottom();
+                var tb = new TextBlock();
+                var error = trainer.Error * 100;
+                sum += error;
+                experimentCount++;
+                last.Add(error);
+                last.Remove(last.First());
+                tb.Text = $"[{experimentCount}] Успешное обучение мини-пакета.";
+
+                //$"Текущая ошибка: {error}%. " +
+                //$"Avg: {sum / experimentCount}%. " +
+                //$"Last100 avg: {last.Aggregate((x,y)=>x+y)/100}";
+                trainContainer.Children.Add(tb);
+                if (experimentCount % 100 == 0)
+                {
+                    trainContainer.Children.RemoveRange(0, 90);
+                }
+                trainList.ScrollToBottom();
             }
             creator.IsTrained = true;
+            DataBase.UpdatePerceptron(creator);
         }
+
     }
 }

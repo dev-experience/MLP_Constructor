@@ -69,6 +69,8 @@
     <Compile Include="StepByStepWPFConstructor.cs" />
     <Compile Include="Steps\CustomStep.cs" />
     <Compile Include="Steps\StepAddress.cs" />
+    <Compile Include="Steps\ChangedStepEventArgs.cs" />
+    <Compile Include="Steps\ChangedStepEventHandler.cs" />
     <Compile Include="Steps\StepsBinder.cs" />
     <Compile Include="Steps\StepsFactory.cs" />
     <Compile Include="UIElementChangedEventHandler.cs" />

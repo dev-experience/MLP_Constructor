@@ -34,7 +34,7 @@ namespace MLP_Constructor.Model.EntityDataModel
             return base.SaveChanges();
         }
         public DbSet<MLP> Perceptrons { get; set; }
-    
+        public DbSet<WorkedPerceptron> WorkedPerceptrons { get; set; }
     }
 
 

@@ -8,7 +8,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.GraphParameters
 {
     public class Input<T> : Input
     {
-        public string Name { get; set; }
+       
         private readonly T minValue;
         private readonly T maxValue;
         private readonly INormalizeProvider<T> normalizeProvider;
@@ -30,6 +30,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.GraphParameters
     }
     public abstract class Input
     {
+        public string Name { get; set; }
         public abstract double Init(object value);
 
     }

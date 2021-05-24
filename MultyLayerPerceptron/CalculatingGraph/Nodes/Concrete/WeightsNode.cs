@@ -19,7 +19,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
         {
             var ownGrad = GetOwnGradient();
             var addiction = ownGrad * LearningRate;
-
+            
             if (addiction is FakeBatch fake)
             {
                 fake[0].Check();
@@ -32,8 +32,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
                     addiction[i].Check();
                 }
             }
-
-            result = result.ForEachMatrix(addiction, (x, y) => x - y);
+            result = new FakeBatch(BatchSize, result[0] - addiction[0]);
         }
         public void Initiate(Matrix weights,
             WeightDirectionType directionType = WeightDirectionType.FromTo)

@@ -23,7 +23,7 @@ namespace MLP_Constructor.Model.MLPParameters
             DataBase = new DataBaseParameters();
             LearningRate = new LearningRateParameter();
             HiddenLayers = new List<HiddenLayerParameters>();
-            LearningRate.LearningRate = 0.0;
+            LearningRate.LearningRate = 0.05;
         }
         
         private bool CheckCorrectData()
@@ -57,7 +57,7 @@ namespace MLP_Constructor.Model.MLPParameters
             Perceptron = temp
                 .AddOutput(outputs)
                 .SetLearningRate(0.01)
-                .SetRegularizationRate(0);
+                .SetRegularizationRate(0.01);
 
             return true;
         }

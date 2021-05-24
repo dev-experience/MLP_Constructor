@@ -16,7 +16,7 @@ namespace MLP_Constructor.Model.MLPParameters
         private int allCount;
         private int current = 0;
         private int last = 0;
-        private int batchSize = 32;
+        private int batchSize = 20;
         private int[] ids;
         private Random rnd = new Random();
         public Trainer(PerceptronCreator creator)
@@ -60,10 +60,8 @@ namespace MLP_Constructor.Model.MLPParameters
                 curIds[i] = ids[last + i];
             }
             last = current;
-            var trainData = creator.DataBase.GetTrainData(curIds);
+            var trainData = creator.DataBase.GetTrainData(curIds).ToArray();
             var a = creator.Perceptron.Train(out error, trainData);
-            var b = a.Select(x => x.Transposed()).ToArray();
-            lastW = a;
             return true;
         }
         public bool CanCheck => current <= allCount;

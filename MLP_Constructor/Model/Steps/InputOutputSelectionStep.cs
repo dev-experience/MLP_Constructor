@@ -74,12 +74,13 @@ namespace MLP_Constructor.Model.Steps
             {
                 CheckBox input = new CheckBox();
                 input.Content = name;
-                input.Checked += OnSelectInput;
-                input.Unchecked += OnDeselectInput;
                 if (creator.DataBase.Inputs.Any(x => x.Name.Equals(name)))
                 {
                     input.IsChecked = true;
+                    inputsChecked.Add(input);
                 }
+                input.Checked += OnSelectInput;
+                input.Unchecked += OnDeselectInput;
                 inputs.Children.Add(input);
             }
             return inputs;
@@ -97,12 +98,13 @@ namespace MLP_Constructor.Model.Steps
                 RadioButton output = new RadioButton();
                 output.GroupName = "outputs";
                 output.Content = name;
-                output.Checked += OnSelectOutput;
                 if (name.Equals(creator.DataBase.OutputClassName,
                     StringComparison.OrdinalIgnoreCase))
                 {
                     output.IsChecked = true;
+                    checkedOutput = output;
                 }
+                output.Checked += OnSelectOutput;
                 outputs.Children.Add(output);
             }
             return outputs;

@@ -21,7 +21,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
             var result = new FakeBatch(inputGradientResult.Size,inputGradientResult[0]);
             for (int i = 1; i < result.Size; i++)
             {
-                result[i] += inputGradientResult[i];
+              //  result[i] += inputGradientResult[i];
             }
             return result;
         }

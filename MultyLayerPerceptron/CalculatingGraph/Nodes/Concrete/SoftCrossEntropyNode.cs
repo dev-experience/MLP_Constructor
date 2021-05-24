@@ -16,19 +16,36 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
             {
 
             }
-            var res = new Batch(new Vector[input.Size]);
-            var sums = new Batch(new Scalar[input.Size]);
-            var exps = new Batch(new Vector[input.Size]);
+            var input2 = input.ForEachMatrix(x => x.Clone() as Matrix);
+            for (int i = 0; i < input2.Size; i++)
+            {
+                double min = input2[i].Values[0];
+                for (int j = 1; j < input2[i].Values.Length; j++)
+                {
+                    double cur = input2[i].Values[j];
+                    if (min > cur)
+                    {
+                        min = cur;
+                    }
+                }
+                for (int j = 0; j < input2[i].Values.Length; j++)
+                {
+                    input2[i].Values[j] -= min;
+                }
+            }
+            var res = new Batch(new Vector[input2.Size]);
+            var sums = new Batch(new Scalar[input2.Size]);
+            var exps = new Batch(new Vector[input2.Size]);
             for (int i = 0; i < exps.Size; i++)
             {
-                exps[i] = input[i]
+                exps[i] = input2[i]
                     .OperationForEachElement(x => Math.Exp(x));
 
                 var expsVec = exps[i].AsVector;
-               
-              
-                    expsVec.Check();
-             
+
+
+                expsVec.Check();
+
                 var sum = 0.0;
                 for (int j = 0; j < expsVec.Length; j++)
                 {
@@ -39,17 +56,17 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
                     sum = expsVec.Length;
                 }
                 res[i] = expsVec.OperationForEachElement(x => x / sum);
-                
+
             }
             return res;
         }
         protected override Batch ComputeForwardResult(Batch leftResult,
             Batch rightResult)
         {
-            
+
             var result = new Batch(new Matrix[leftResult.Size]);
             var softmaxOutput = SoftMax(leftResult);
-            var outputLength = leftResult[0].Columns;
+            var outputLength = leftResult[0].Values.Length;
             for (int i = 0; i < result.Size; i++)
             {
                 result[i] = Matrix.Scalar(0);
@@ -57,39 +74,69 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
                 {
                     var leftVec = softmaxOutput[i].AsVector;
                     var rightVec = rightResult[i].AsVector;
-                    result[i] -= Matrix.Scalar(Math.Log(leftVec[j] * rightVec[j]));
+                    if (rightVec[j] == 0) continue;
+                    result[i] -= Matrix.Scalar(Math.Log(leftVec[j]));
                 }
 
             }
+
+
+
+            for (int i = 0; i < result.Size; i++)
+            {
+                result[i].Check();
+            }
+
             return result;
         }
 
         protected override Batch ComputeGradientByLeft(Batch inputGradientResult,
             Batch leftResult, Batch rightResult)
         {
+            var predicted = Predicted;
+            var observed = rightResult;
+            /*  predicted = new Batch(
+                 new Vector(new double[] { 0.15, 0.4, 0.46 }),
+                 new Vector(new double[] { 0.04, 0.26, 0.7 }),
+                 new Vector(new double[] { 0.04, 0.65, 0.31 }));
+             BatchSize = 3;
+             observed = new Batch(
+                 new Vector(new double[] { 1, 0, 0 }),
+                 new Vector(new double[] { 0, 1, 0 }),
+                 new Vector(new double[] { 0, 0, 1 }));*/
             var outputLength = rightResult[0].AsVector.Length;
-            Batch grads = new Batch(new Matrix[BatchSize]);
-
-            for (int i = 0; i < BatchSize; i++)
+            Vector grads = new Vector(new double[outputLength]);
+            for (int i = 0; i < outputLength; i++)
             {
-                var rightVec = rightResult[i].AsVector;
-                var leftVec = leftResult[i].AsVector;
-                Vector currentGrad = new Vector(new double[outputLength]);
-                for (int j = 0; j < outputLength; j++)
+                var currentObserved = observed[i].AsVector;
+
+
+                double currentGrad = 0;
+                for (int j = 0; j < BatchSize; j++)
                 {
+                    var currentPredicted = predicted[j].AsVector;
                     for (int k = 0; k < outputLength; k++)
                     {
-                        if (rightVec[k] != 0)
+                        var temp = currentObserved[k];
+                        if (temp != 0)
                         {
-                            currentGrad[j] += rightVec[k] * (leftVec[k] - DeltaFunction.GetResult(j, k));
+                            currentGrad += temp * (currentPredicted[k] - DeltaFunction.GetResult(k, j));
                         }
 
                     }
                 }
                 grads[i] = currentGrad;
             }
-            var result = grads.ForEachMatrix(inputGradientResult, (x, y) => x * y);
-            return result;
+            /*  var commonGrad = grads[0];
+              for (int i = 1; i < grads.Size; i++)
+              {
+                  commonGrad += grads[i];
+              }
+            */
+            //var result = grads.ForEachMatrix(inputGradientResult, (x, y) => x * y);
+            var grad = new FakeBatch(BatchSize, grads);
+
+            return grad;
         }
 
         internal double GetError()

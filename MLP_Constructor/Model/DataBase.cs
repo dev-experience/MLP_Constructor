@@ -52,6 +52,27 @@ namespace MLP_Constructor.Model
                 }
             }
         }
+        public static void UpdatePerceptron(PerceptronCreator creator)
+        {
+            WorkedPerceptron perceptron = new WorkedPerceptron();
+            perceptron.Perceptron = creator.Perceptron;
+            perceptron.Name = creator.Name;
+            perceptron.Id = creator.Id;
+            using (var context = new MLPContext())
+            {
+                var findedPerceptron = context.WorkedPerceptrons
+                    .FirstOrDefault(x => x.Id == perceptron.Id);
+                if (findedPerceptron is null)
+                {
+                    context.WorkedPerceptrons.Add(perceptron);
+                }
+                else
+                {
+                    findedPerceptron = perceptron;
+                }
+                context.SaveChanges();
+            }
+        }
         public static DataBaseContext Context(string connectionString)
         {
             return new DataBaseContext(connectionString);

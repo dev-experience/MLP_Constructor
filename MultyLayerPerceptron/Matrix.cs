@@ -15,7 +15,9 @@ namespace MultyLayerPerceptron
         }
         public override string ToString()
         {
-            return $"[{Rows}x{Columns}] " + base.ToString();
+            return $"[{Rows}x{Columns}] " + 
+                $"From: {Values.Min()} To: {Values.Max()} "+
+                base.ToString();
         }
         public void InsertRow(int row, params double[] values)
         {
@@ -72,7 +74,7 @@ namespace MultyLayerPerceptron
             }
             return first;
         }
-
+        
         public void Check()
         {
             for (int i = 0; i < Values.Length; i++)
@@ -122,10 +124,11 @@ namespace MultyLayerPerceptron
         public Matrix OperationForEachElement(Func<double, double> operation)
         {
             var res = this.Clone() as Matrix;
-            Parallel.For(0, Values.Length, (i) =>
-              {
-                  res.Values[i] = operation(Values[i]);
-              });
+            for (int i = 0; i < Values.Length; i++)
+            {
+
+                res.Values[i] = operation(Values[i]);
+            }
             return res;
         }
         public static Matrix Rand(int rows, int cols, double min = 0, double max = 1)
@@ -252,6 +255,5 @@ namespace MultyLayerPerceptron
         {
             return new Vector(value);
         }
-
     }
 }

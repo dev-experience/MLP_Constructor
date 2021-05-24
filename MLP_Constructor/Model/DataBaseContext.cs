@@ -86,14 +86,23 @@ namespace MLP_Constructor.Model.DBContext
                 x.AlternativeNames.Add(x.Name);
                 string[] conditions = x.AlternativeNames
                 .Select(y => $"{source}.{className} LIKE \'{y}\'").ToArray();
+
                 return $"IIF({string.Join(" OR ", conditions)}, 1, 0) AS {x.DbName}";
             })) + " ";
 
             string from = $"FROM {source} ";
-            string where = $"WHERE {source}.{className} IS NOT NULL AND " +
-                $"{string.Join(" AND ", inputs.Select(x => $"{source}.{x.DbName} IS NOT NULL"))};";
 
-            string query = insert + selectInp + selectOut + from + where;
+            string where = $"WHERE {source}.{className} IS NOT NULL AND " +
+                $"{string.Join(" AND ", inputs.Select(x => $"{source}.{x.DbName} IS NOT NULL"))} AND ("; 
+            string whereOut =  string.Join(" OR ", outputs.Select(x =>
+            {
+                x.AlternativeNames.Add(x.Name);
+                string[] conditions = x.AlternativeNames
+                .Select(y => $"{source}.{className} LIKE \'{y}\'").ToArray();
+
+                return $"{string.Join(" OR ", conditions)} ";
+            })) + "); ";
+            string query = insert + selectInp + selectOut + from + where+whereOut;
             using (var cmd = new OleDbCommand(query, db))
             {
                 cmd.ExecuteNonQuery();

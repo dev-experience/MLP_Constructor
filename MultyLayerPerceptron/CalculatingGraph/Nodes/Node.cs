@@ -10,7 +10,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes
     public abstract class Node : IChildNode
     {
         public int BatchSize { get; set; }
-        public void OnBatchSizeChanged(object sender, int newSize)
+        public virtual void OnBatchSizeChanged(object sender, int newSize)
         {
             BatchSize = newSize;
             if (result is FakeBatch scaled)
@@ -36,6 +36,10 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes
             {
 
                 result = ComputeForwardResult(Left?.Compute(), Right?.Compute());
+            }
+            for (int i = 0; i < result.Size; i++)
+            {
+                result[i].Check();
             }
             return result;
         }
@@ -87,7 +91,10 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes
                     Gradient = grads.Aggregate((x, y) => x.Sum(y));
                 }
             }
-
+            for (int i = 0; i < Gradient.Size; i++)
+            {
+                Gradient[i].Check();
+            }
             return Gradient;
         }
         public ParentNodeSide ParentSide(INode parentNode)
@@ -142,6 +149,9 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes
                 result = null;
             }
         }
-
+        public override string ToString()
+        {
+            return $"Size: {result.Size}. "+base.ToString();
+        }
     }
 }

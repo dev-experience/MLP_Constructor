@@ -11,7 +11,12 @@ namespace MultyLayerPerceptron.CalculatingGraph.Nodes.Concrete
     {
         protected override Batch ComputeForwardResult(Batch leftResult, Batch rightResult)
         {
-            return leftResult * rightResult;
+            var result = leftResult * rightResult;
+            if (result.Size < 500)
+            {
+
+            }
+            return result;
         }
 
         protected override Batch ComputeGradientByLeft(Batch inputGradientResult, Batch leftResult, Batch rightResult)

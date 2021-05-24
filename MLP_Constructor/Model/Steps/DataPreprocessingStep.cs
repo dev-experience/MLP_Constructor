@@ -110,7 +110,7 @@ namespace MLP_Constructor.Model.Steps
 
             relocateButton.IsEnabled = true;
             isProcessing = false;
-            Update(true);
+            Reload();
 
         }
     }

@@ -15,9 +15,10 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
         private DataInputNode input;
         private SoftCrossEntropyNode output;
         private SumNode estimation;
+        private List<Node> allNodes = new List<Node>();
         private List<WeightsNode> weightsNodes = new List<WeightsNode>();
         private List<ConstantInputNode> regRateNodes = new List<ConstantInputNode>();
-        private readonly PerceptronBuilder builder;
+        public readonly PerceptronBuilder builder;
         private event Action<object, int> OnBatchSizeChanged;
         private event Action<bool> OnResetData;
         private int HiddenLayers => builder.Weights.Count - 1;
@@ -75,14 +76,27 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
         }
         public Matrix[] Train(out double error,  IEnumerable<Tuple<Vector, Vector>> inputOutputTuple)
         {
-            SetBatchSize(inputOutputTuple.Count());
             var inputs = inputOutputTuple.Select(x => x.Item1).ToArray();
             var outputs = inputOutputTuple.Select(x => x.Item2).ToArray();
-            CheckInputs(inputs);
-            CheckOutputs(outputs);
+
+            int count = inputs.Length;
+            SetBatchSize(count);
+            CheckInputs(inputs.Take(count).ToArray());
+            CheckOutputs(outputs.Take(count).ToArray());
             input.Initiate(GetNormalize(inputs));
             observedInput.Initiate(outputs);
             var est = estimation.Compute();
+            try
+            {
+
+            for (int i = 0; i < est.Size; i++)
+            {
+                est[i].Check();
+            }
+            }catch(Exception e)
+            {
+
+            }
             error = output.GetError();
             BackProp();
             OnResetData?.Invoke(false);
@@ -95,6 +109,8 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
 
         private void Subscribe(IEnumerable<Node> nodes)
         {
+            OnResetData += estimation.ResetResult;
+            OnBatchSizeChanged += estimation.OnBatchSizeChanged;
             foreach (var node in nodes)
             {
                 OnBatchSizeChanged += node.OnBatchSizeChanged;
@@ -222,6 +238,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
             outputs[0].AddAsRight(input);
             Subscribe(GetAllNodes(estimation));
             OnBatchSizeChanged.Invoke(this, 1);
+            allNodes = GetAllNodes(estimation);
         }
         private Vector[] GetNormalize(Vector[] raw)
         {
@@ -235,6 +252,16 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
                     resVector[j] = builder.Inputs[j].Init(raw[i][j]);
                 }
                 result[i] = resVector;
+            }
+            for (int i = 0; i < result.Length; i++)
+            {
+                foreach (var value in result[i].Values)
+                {
+                    if(value  > 1 || value < 0)
+                    {
+                        throw new InvalidOperationException("Плохая нормализация");
+                    }
+                }
             }
             return result;
         }

@@ -1,4 +1,5 @@
 ﻿using MultyLayerPerceptron.CalculatingGraph.GraphParameters;
+using MultyLayerPerceptron.Operations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,16 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
         {
             this.perceptron = perceptron;
         }
+        private double from = 0.1;
+        private double to = 0.2;
+       /* private (double from, double to) GetInterval(int inSize, int outSize)
+        {
+            if(perceptron.ActivationFunc is LeakyReLUOperation)
+            {
+                var var = 2.0 / inSize;
+
+            }
+        }*/
         private int GetLastSize()
         {
             var lastSize = perceptron.Inputs.Length;
@@ -30,8 +41,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
         }
         public HiddenLayer AddHidden(int size)
         {
-
-            return AddHidden(Matrix.Rand(GetLastSize(), size, -1, 1));
+            return AddHidden(Matrix.Rand(GetLastSize(), size, from, to));
         }
         public HiddenLayer AddHidden(Matrix weights)
         {
@@ -46,7 +56,7 @@ namespace MultyLayerPerceptron.CalculatingGraph.Network
         public Perceptron AddOutput(params Output[] outputs)
         {
             if (outputs is null) throw new ArgumentNullException(nameof(outputs));
-            perceptron.Weights.Add(Matrix.Rand(GetLastSize(), outputs.Length, -1, 1));
+            perceptron.Weights.Add(Matrix.Rand(GetLastSize(), outputs.Length, from, to));
             perceptron.Outputs = outputs;
             return new Perceptron(perceptron);
         }

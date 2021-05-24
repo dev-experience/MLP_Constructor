@@ -150,7 +150,7 @@ namespace MLP_Constructor.Model.Steps
             creator.HiddenLayers.Remove(hidden);
             creator.ResetPerceptron();
             confirmButton.IsEnabled = true;
-            Update(true);
+            Reload();
         }
 
         private void OnAddButtonClick(object sender, RoutedEventArgs e)
@@ -159,7 +159,7 @@ namespace MLP_Constructor.Model.Steps
             creator.HiddenLayers.Add(new HiddenLayerParameters(1));
             creator.ResetPerceptron();
             confirmButton.IsEnabled = true;
-            Update(true);
+            Reload();
         }
     }
 }

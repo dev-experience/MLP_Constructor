@@ -95,8 +95,13 @@
     <Compile Include="Migrations\202105131146143_RequiredLastUpdate.Designer.cs">
       <DependentUpon>202105131146143_RequiredLastUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202105230227168_WorkedPerceptronAdded.cs" />
+    <Compile Include="Migrations\202105230227168_WorkedPerceptronAdded.Designer.cs">
+      <DependentUpon>202105230227168_WorkedPerceptronAdded.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\DataBase.cs" />
     <Compile Include="Model\EntityDataModel\IEntitySave.cs" />
+    <Compile Include="Model\EntityDataModel\WorkedPerceptron.cs" />
     <Compile Include="Model\MLPParameters\IDbColumn.cs" />
     <Compile Include="Model\MLPParameters\Trainer.cs" />
     <Compile Include="Model\Steps\DataPreprocessingStep.cs" />
@@ -186,6 +191,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202105131146143_RequiredLastUpdate.resx">
       <DependentUpon>202105131146143_RequiredLastUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202105230227168_WorkedPerceptronAdded.resx">
+      <DependentUpon>202105230227168_WorkedPerceptronAdded.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

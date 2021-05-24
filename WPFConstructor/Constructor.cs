@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using WPFConstructor;
+using WPFConstructor.Steps;
 
 namespace WPFConstructor
 {
@@ -17,8 +18,11 @@ namespace WPFConstructor
         public event UIElementChangedEventHandler FooterChanged;
         public event RoutedEventHandler OnOpenFile;
         public event RoutedEventHandler OnSaveFile;
-
+        private List<MenuItem> stepMenuItems = new List<MenuItem>();
         private Menu menu;
+        private MenuItem navMenu;
+        private MenuItem fileMenu;
+        private MenuItem saveItem;
         private Panel content;
         private Panel footer;
         public bool ContentEnabled { get; set; }
@@ -29,9 +33,37 @@ namespace WPFConstructor
         public Constructor(StagesFactory stagesProvider, StepByStepToken token)
         {
 
+            this.token = token;
             currentAddress = new StepAddress();
             Stages = new List<Stage>(stagesProvider.GetStages());
-            this.token = token;
+
+            foreach (var step in Stages.SelectMany(x => x.Steps))
+            {
+                step.StepChanged += OnStepChanged;
+            }
+
+        }
+
+        private void OnStepChanged(object sender, ChangedStepEventArgs e)
+        {
+            var step = sender as CustomStep;
+
+            UpdateFooter();
+            if (stepMenuItems.Count == 0) return;
+            var menuItem = stepMenuItems
+                .First(x => (x.DataContext as CustomStep).Address == step.Address);
+            if (menuItem.IsEnabled != step.IsDependenciesComplete)
+            {
+                menuItem.IsEnabled = !menuItem.IsEnabled;
+            }
+        }
+
+        private void OnMenuItemIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var menu = sender as MenuItem;
+            var step = menu.DataContext as CustomStep;
+
+            menu.Header = GetMenuItemHeader(step);
         }
 
         private Panel GetContent(StepAddress address)
@@ -61,14 +93,25 @@ namespace WPFConstructor
             MenuItem open = new MenuItem() { Header = "Открыть" };
             open.Click += OpenMenuClick;
             file.Items.Add(open);
-            if (token.DataContext is null) return file;
 
-            MenuItem save = new MenuItem() { Header = "Сохранить" };
-            save.Click += SaveMenuClick;
-            file.Items.Add(save);
+            saveItem = new MenuItem() { Header = "Сохранить" };
+            saveItem.Click += SaveMenuClick;
+            file.Items.Add(saveItem);
             return file;
         }
-
+        private string GetMenuItemHeader(CustomStep step)
+        {
+            if (step.IsDependenciesComplete)
+            {
+                return step.ToString();
+            }
+            else
+            {
+                return step + " " + step
+                     .Dependencies
+                     .First(x => !x.IsComplete).Address.ToString();
+            }
+        }
         private MenuItem CreateNavigationMenu()
         {
             MenuItem nav = new MenuItem { Header = "Навигация" };
@@ -77,17 +120,11 @@ namespace WPFConstructor
                 var stageItem = new MenuItem { Header = stage };
                 foreach (var step in stage.Steps)
                 {
-                    var isAvaliable = step.IsDependenciesComplete;
-                    var incomlpeteStep = step.Dependencies.FirstOrDefault(x => !x.IsComplete);
-                    StringBuilder str = new StringBuilder();
-                    str.Append(step);
-                    if (incomlpeteStep != null)
-                    {
-                        str.Append($" (Необходимо: {incomlpeteStep.Address})");
-                    }
-
-                    var stepItem = new MenuItem { DataContext = step, Header = str };
-                    stepItem.IsEnabled = incomlpeteStep == null;
+                    var stepItem = new MenuItem { DataContext = step };
+                    stepItem.Header = GetMenuItemHeader(step);
+                    stepMenuItems.Add(stepItem);
+                    stepItem.IsEnabledChanged += OnMenuItemIsEnabledChanged;
+                    stepItem.IsEnabled = step.IsDependenciesComplete;
                     stepItem.Click += NavigationMenuClick;
                     stageItem.Items.Add(stepItem);
                 }
@@ -104,13 +141,19 @@ namespace WPFConstructor
 
         private Menu CreateMenu()
         {
+
             Menu _menu = new Menu();
 
-            _menu.Items.Add(CreateFileMenu());
-            if (ContentEnabled)
+            if (navMenu is null)
             {
-                _menu.Items.Add(CreateNavigationMenu());
+                navMenu = CreateNavigationMenu();
             }
+            if (fileMenu is null)
+            {
+                fileMenu = CreateFileMenu();
+            }
+            _menu.Items.Add(fileMenu);
+            _menu.Items.Add(navMenu);
             return _menu;
         }
 
@@ -137,10 +180,11 @@ namespace WPFConstructor
         internal void Load()
         {
             if (ContentEnabled)
+
             {
-                foreach (var item in Stages.SelectMany(x=>x.Steps))
+                foreach (var item in Stages.SelectMany(x => x.Steps))
                 {
-                    item.Reset();
+                    item.Reload();
                 }
 
                 EndButtonClick(null, null);
@@ -256,14 +300,26 @@ namespace WPFConstructor
 
         private void UpdateMenu()
         {
-            menu = CreateMenu();
+            if (menu is null)
+            {
+                menu = CreateMenu();
+            }
+            saveItem.IsEnabled = ContentEnabled;
+            if (ContentEnabled)
+            {
+                navMenu.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                navMenu.Visibility = Visibility.Hidden;
+            }
             MenuChanged?.Invoke(this, menu);
         }
         public void Relocate(StepAddress address = default)
         {
             foreach (var item in Stages.SelectMany(x => x.Steps))
             {
-                item.Reset();
+                item.Reload();
             }
             currentAddress = address;
             Update();

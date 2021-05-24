@@ -19,6 +19,7 @@ namespace WPFConstructor
         public StagesFactory()
         {
             Token = StepByStepToken.New;
+            CustomStep.RegisterToken(Token);
         }
         protected Stage CreateStage(string name, Action<StepsFactory> stepsSelector)
         {
